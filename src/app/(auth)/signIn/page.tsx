@@ -36,18 +36,29 @@ const SignIn = () => {
         password: data.password,
         redirect: false,
       })
-      if (result?.error) {
+
+      if (!result) {
+        throw new Error("Something went wrong. Please try again.")
+      }
+
+      if (result.error) {
         toast({
           title: "Sign In Failed",
           description: result.error === "CredentialsSignin" ? "Invalid email or password." : result.error,
           variant: "destructive",
         })
+        return
       }
-      if (result?.url) {
+
+      if (result.url) {
         router.replace("/dashboard")
       }
     } catch (error) {
-      toast({ title: "Sign In Failed", description: String(error), variant: "destructive" })
+      toast({
+        title: "Sign In Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -56,21 +67,40 @@ const SignIn = () => {
   const handleGuestLogin = async () => {
     setIsGuestLoading(true)
     try {
-      const response = await fetch("/api/guest", { method: "POST", headers: { "Content-Type": "application/json" } })
-      if (!response.ok) throw new Error("Failed to create guest session")
+      const response = await fetch("/api/guest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || "Failed to create guest session")
+      }
+
       const data = await response.json()
+
       if (data.success) {
         toast({
           title: "Welcome Guest!",
           description: "You can make up to 3 profession predictions. Sign up for unlimited access!",
         })
         router.replace("/")
+      } else {
+        throw new Error(data.message || "Failed to create guest session")
       }
     } catch (error) {
-      toast({ title: "Guest Login Failed", description: String(error), variant: "destructive" })
+      toast({
+        title: "Guest Login Failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      })
     } finally {
       setIsGuestLoading(false)
     }
+  }
+
+  const handleOAuthSignIn = (provider: "google" | "github") => {
+    signIn(provider, { callbackUrl: "/dashboard" })
   }
 
   return (
@@ -90,7 +120,7 @@ const SignIn = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input placeholder="Enter your email" type="email" autoComplete="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,9 +132,19 @@ const SignIn = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Password</FormLabel>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
                   <FormControl>
-                    <Input placeholder="Enter your password" type="password" {...field} />
+                    <Input
+                      placeholder="Enter your password"
+                      type="password"
+                      autoComplete="current-password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -112,32 +152,69 @@ const SignIn = () => {
             />
 
             <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...</> : "Sign In"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
         </Form>
 
         <div className="relative">
-          <div className="absolute inset-0 flex items-center"><Separator /></div>
+          <div className="absolute inset-0 flex items-center">
+            <Separator />
+          </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
-        <Button variant="outline" className="w-full flex items-center justify-center space-x-2" onClick={() => signIn("google")}> 
+        <Button
+          variant="outline"
+          className="w-full flex items-center justify-center space-x-2"
+          onClick={() => handleOAuthSignIn("google")}
+          type="button"
+        >
           <FcGoogle className="h-5 w-5" /> <span>Sign in with Google</span>
         </Button>
 
-        <Button variant="outline" className="w-full flex items-center justify-center space-x-2" onClick={() => signIn("github")}> 
+        <Button
+          variant="outline"
+          className="w-full flex items-center justify-center space-x-2"
+          onClick={() => handleOAuthSignIn("github")}
+          type="button"
+        >
           <FaGithub className="h-5 w-5" /> <span>Sign in with GitHub</span>
         </Button>
 
-        <Button variant="outline" className="w-full flex items-center justify-center space-x-2" onClick={handleGuestLogin} disabled={isGuestLoading}>
-          {isGuestLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Guest Session...</> : <><UserCircle2 className="mr-2 h-4 w-4" /> Continue as Guest</>}
+        <Button
+          variant="outline"
+          className="w-full flex items-center justify-center space-x-2"
+          onClick={handleGuestLogin}
+          disabled={isGuestLoading}
+          type="button"
+        >
+          {isGuestLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Guest Session...
+            </>
+          ) : (
+            <>
+              <UserCircle2 className="mr-2 h-4 w-4" /> Continue as Guest
+            </>
+          )}
         </Button>
 
         <div className="text-center text-sm">
-          <p className="text-muted-foreground">Don&apos;t have an account? <Link href="/signUp" className="font-medium text-primary hover:underline">Sign Up</Link></p>
+          <p className="text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/signUp" className="font-medium text-primary hover:underline">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
@@ -145,3 +222,4 @@ const SignIn = () => {
 }
 
 export default SignIn
+
