@@ -12,9 +12,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect dashboard route - redirect to login if not authenticated
-  if (!token && pathname === "/") {
-    return NextResponse.redirect(new URL("/signIn", request.url));
-  }
+//  if (!token && pathname === "/") {
+  //  return NextResponse.redirect(new URL("/signIn", request.url));
+//  }
 
   // Redirect authenticated users away from auth pages
   if (token && (pathname === "/signIn" || pathname === "/signUp" || pathname.startsWith("/verify"))) {
