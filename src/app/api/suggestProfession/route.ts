@@ -3,9 +3,12 @@ import { cookies } from "next/headers"
 import { dbConnect } from "@/lib/dbConnect"
 import GuestModel from "@/models/Guest.models"
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import type { CareerDetail, FormData } from "@/types/form"
+import type { FormData } from "@/types/form"
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
+if (!process.env.GOOGLE_AI_API_KEY) {
+  throw new Error("GOOGLE_AI_API_KEY is not defined in the environment variables.")
+}
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
 
 // Maximum number of predictions allowed for guest users
 const MAX_GUEST_PREDICTIONS = 3
@@ -21,120 +24,120 @@ function constructUserBio(formData: FormData): string {
   }
 
   bio += "Skills:\n"
-  bio += formData.skills ? formData.skills + "\n\n" : "Not specified\n\n"
+  bio += formData.skills ? `${formData.skills}\n\n` : "Not specified\n\n"
 
   bio += "Hobbies:\n"
-  bio += formData.hobbies ? formData.hobbies + "\n\n" : "Not specified\n\n"
+  bio += formData.hobbies ? `${formData.hobbies}\n\n` : "Not specified\n\n"
 
   bio += "Interests:\n"
-  bio += formData.interests ? formData.interests + "\n\n" : "Not specified\n\n"
+  bio += formData.interests ? `${formData.interests}\n\n` : "Not specified\n\n"
 
   bio += "Languages Known:\n"
-  bio += formData.languages ? formData.languages + "\n\n" : "Not specified\n\n"
+  bio += formData.languages ? `${formData.languages}\n\n` : "Not specified\n\n"
 
   // Add age-group specific information
   if (formData.ageGroup === "student") {
     bio += "Favorite Subjects:\n"
-    bio += formData.favoriteSubjects ? formData.favoriteSubjects + "\n\n" : "Not specified\n\n"
+    bio += formData.favoriteSubjects ? `${formData.favoriteSubjects}\n\n` : "Not specified\n\n"
 
     bio += "Extracurricular Activities:\n"
-    bio += formData.extracurriculars ? formData.extracurriculars + "\n\n" : "Not specified\n\n"
+    bio += formData.extracurriculars ? `${formData.extracurriculars}\n\n` : "Not specified\n\n"
 
     // Add new field
     if (formData.careerGoals) {
       bio += "Early Career Goals:\n"
-      bio += formData.careerGoals + "\n\n"
+      bio += `${formData.careerGoals}\n\n`
     }
 
     // Add mentorship interest if available
     if (formData.mentorshipInterest) {
       bio += "Mentorship Interest:\n"
-      bio += formData.mentorshipInterest + "\n\n"
+      bio += `${formData.mentorshipInterest}\n\n`
     }
   }
 
   if (formData.ageGroup === "college") {
     bio += "Major:\n"
-    bio += formData.major ? formData.major + "\n\n" : "Not specified\n\n"
+    bio += formData.major ? `${formData.major}\n\n` : "Not specified\n\n"
 
     bio += "Minors/Secondary Fields:\n"
-    bio += formData.minors ? formData.minors + "\n\n" : "Not specified\n\n"
+    bio += formData.minors ? `${formData.minors}\n\n` : "Not specified\n\n"
 
     bio += "Internships/Work Experience:\n"
-    bio += formData.internships ? formData.internships + "\n\n" : "Not specified\n\n"
+    bio += formData.internships ? `${formData.internships}\n\n` : "Not specified\n\n"
 
     // Add new field
     if (formData.academicInterests) {
       bio += "Specific Academic Interests:\n"
-      bio += formData.academicInterests + "\n\n"
+      bio += `${formData.academicInterests}\n\n`
     }
 
     // Add mentorship interest if available
     if (formData.mentorshipInterest) {
       bio += "Mentorship Interest:\n"
-      bio += formData.mentorshipInterest + "\n\n"
+      bio += `${formData.mentorshipInterest}\n\n`
     }
   }
 
   if (["earlyCareer", "midCareer", "lateCareer"].includes(formData.ageGroup)) {
     bio += "Work Experience:\n"
-    bio += formData.workExperience ? formData.workExperience + "\n\n" : "Not specified\n\n"
+    bio += formData.workExperience ? `${formData.workExperience}\n\n` : "Not specified\n\n"
 
     bio += "Professional Achievements:\n"
-    bio += formData.achievements ? formData.achievements + "\n\n" : "Not specified\n\n"
+    bio += formData.achievements ? `${formData.achievements}\n\n` : "Not specified\n\n"
 
     bio += "Certifications/Specialized Training:\n"
-    bio += formData.certifications ? formData.certifications + "\n\n" : "Not specified\n\n"
+    bio += formData.certifications ? `${formData.certifications}\n\n` : "Not specified\n\n"
 
     // Add career-specific fields
     if (formData.ageGroup === "earlyCareer" && formData.careerAspirations) {
       bio += "Career Aspirations (5-year):\n"
-      bio += formData.careerAspirations + "\n\n"
+      bio += `${formData.careerAspirations}\n\n`
     }
 
     if (formData.ageGroup === "midCareer" && formData.careerChallenges) {
       bio += "Current Career Challenges:\n"
-      bio += formData.careerChallenges + "\n\n"
+      bio += `${formData.careerChallenges}\n\n`
     }
 
     if (formData.ageGroup === "lateCareer") {
       if (formData.futureGoals) {
         bio += "Future Career Goals:\n"
-        bio += formData.futureGoals + "\n\n"
+        bio += `${formData.futureGoals}\n\n`
       }
 
       if (formData.legacyInterests) {
         bio += "Legacy Interests:\n"
-        bio += formData.legacyInterests + "\n\n"
+        bio += `${formData.legacyInterests}\n\n`
       }
     }
 
     // Add work-life balance preference if available
     if (formData.workLifeBalance) {
       bio += "Work-Life Balance Importance:\n"
-      bio += formData.workLifeBalance + "\n\n"
+      bio += `${formData.workLifeBalance}\n\n`
     }
   }
 
   if (formData.ageGroup === "careerChange") {
     bio += "Reason for Career Change:\n"
-    bio += formData.reasonForChange ? formData.reasonForChange + "\n\n" : "Not specified\n\n"
+    bio += formData.reasonForChange ? `${formData.reasonForChange}\n\n` : "Not specified\n\n"
 
     bio += "Transferable Skills:\n"
-    bio += formData.transferableSkills ? formData.transferableSkills + "\n\n" : "Not specified\n\n"
+    bio += formData.transferableSkills ? `${formData.transferableSkills}\n\n` : "Not specified\n\n"
 
     bio += "Desired Work Environment:\n"
-    bio += formData.desiredWorkEnvironment ? formData.desiredWorkEnvironment + "\n\n" : "Not specified\n\n"
+    bio += formData.desiredWorkEnvironment ? `${formData.desiredWorkEnvironment}\n\n` : "Not specified\n\n"
 
     // Add new fields
     if (formData.newFieldInterests) {
       bio += "New Fields of Interest:\n"
-      bio += formData.newFieldInterests + "\n\n"
+      bio += `${formData.newFieldInterests}\n\n`
     }
 
     if (formData.retrainingWillingness) {
       bio += "Willingness to Retrain:\n"
-      bio += formData.retrainingWillingness + "\n\n"
+      bio += `${formData.retrainingWillingness}\n\n`
     }
   }
 
@@ -183,18 +186,37 @@ export async function POST(req: Request) {
     // Convert form data to a structured biography for AI analysis
     const userBio = constructUserBio(formData)
 
+    // Create a timestamp to ensure uniqueness in each request
+    const timestamp = new Date().toISOString()
+
+    // List of common professions to avoid (unless they truly match the profile)
+    const commonProfessions = [
+      "Software Developer",
+      "Data Analyst",
+      "Project Manager",
+      "Marketing Specialist",
+      "Financial Advisor",
+      "Business Consultant",
+      "UX Designer",
+      "Product Manager",
+      "Digital Content Creator",
+    ].join(", ")
+
     const prompt = `As a career counselor AI, analyze the following personal profile to provide comprehensive and detailed career guidance:
 
-IMPORTANT REQUIREMENTS:
-- Suggest EXACTLY 6 unique and distinct career paths that match the profile
-- Each career must be specific (not general categories)
-- Each career must have a unique match percentage between 70-98%
-- Provide highly detailed and personalized explanations for each career
-- For each career, provide unique and specific next steps tailored to that profession
-- If a project/portfolio URL is provided, analyze it for additional insights
-- Consider the person's age group and life stage
-- Provide practical, actionable next steps that are specific to each career path
-- Include an estimated IQ score between 110-140 based on the complexity of skills, education, and interests
+CRITICAL INSTRUCTIONS (YOU MUST FOLLOW THESE EXACTLY):
+- Generate EXACTLY 6 unique and highly specific career paths that precisely match this individual's profile
+- DO NOT suggest generic careers like ${commonProfessions} unless they truly match the specific skills and interests
+- NEVER repeat the same set of professions you've suggested before
+- Each career must be highly specific to the individual's unique combination of skills, interests, and background
+- Each career must be a specific job title (e.g., "Quantum Computing Researcher" not just "Researcher")
+- Analyze the skills, interests, and background in detail to find unique career matches
+- If technical skills are mentioned, suggest technical careers; if creative skills, suggest creative careers
+- If a project/portfolio URL is provided, analyze it deeply for additional insights
+- Consider the person's age group, education level, and life stage for appropriate suggestions
+- Vary the match percentages realistically between 70-98% based on actual alignment
+- Generate a unique IQ estimate between 110-140 based on the complexity of skills, education level, and interests
+- This request was made at ${timestamp} - ensure your response is unique and different from previous responses
 
 For each career suggestion, include:
 1. Title and match percentage
@@ -213,7 +235,18 @@ Make each career description unique, detailed, and actionable with specific next
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
-    const result = await model.generateContent(prompt)
+    // Set temperature higher to increase response variety
+    const generationConfig = {
+      temperature: 0.9, // Increased from default to encourage variety
+      topP: 0.9,
+      topK: 40,
+    }
+
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig,
+    })
+
     const response = result.response
     const text = response.text()
 
@@ -223,8 +256,8 @@ Make each career description unique, detailed, and actionable with specific next
 
     // Improved IQ extraction with fallback and range validation
     let iq = 120 // Default reasonable value if extraction fails
-    const iqMatch = text.match(/IQ.*?(\d+)/i) || text.match(/estimated IQ.*?(\d+)/i) || text.match(/score of (\d+)/i)
-    if (iqMatch && iqMatch[1]) {
+    const iqMatch = text.match(/IQ.*?(\d+)/i) || text.match(/estimated IQ.*?(\d+)/i) || text.match(/score of (\d+)/i) || null;
+    if (iqMatch?.[1]) {
       const extractedIQ = Number.parseInt(iqMatch[1])
       // Validate the IQ is in a reasonable range
       if (extractedIQ >= 90 && extractedIQ <= 150) {
@@ -236,60 +269,150 @@ Make each career description unique, detailed, and actionable with specific next
     const professionsMatch =
       text.match(/CAREER RECOMMENDATIONS:([\s\S]*?)(?=DETAILED ANALYSIS|$)/i) ||
       text.match(/CAREER SUGGESTIONS:([\s\S]*?)(?=DETAILED ANALYSIS|$)/i) ||
-      text.match(/RECOMMENDED CAREERS:([\s\S]*?)(?=DETAILED ANALYSIS|$)/i)
+      text.match(/RECOMMENDED CAREERS:([\s\S]*?)(?=DETAILED ANALYSIS|$)/i) ||
+      text.match(/CAREER PATHS:([\s\S]*?)(?=DETAILED ANALYSIS|$)/i)
 
     let professions: string[] = []
-    if (professionsMatch && professionsMatch[1]) {
+    if (professionsMatch?.[1]) {
       professions = professionsMatch[1]
         .split(/\d+\.\s+/)
         .filter((p) => p.trim())
         .map((p) => p.replace(/^\s*-\s*/, "").trim())
+    } else {
+      // If no section header, try to extract from the detailed sections
+      const careerSections = text.split(/\d+\.\s+Title:|Career \d+:|Profession \d+:|Career Path \d+:/i)
+      if (careerSections.length > 1) {
+        professions = careerSections
+          .slice(1) // Skip the first element which is before any title
+          .map((section) => {
+            const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:$$\d+%$$|\d+%)/)
+            return titleMatch ? titleMatch[1].trim() : ""
+          })
+          .filter((title) => title)
+      }
+    }
+
+    // If we still couldn't extract professions, look for numbered lists
+    if (professions.length === 0) {
+      const numberedListMatch = text.match(/\d+\.\s+([^\n]+)/g)
+      if (numberedListMatch) {
+        professions = numberedListMatch
+          .map((line) => line.replace(/^\d+\.\s+/, "").trim())
+          .filter((title) => title && title.length < 100) // Avoid capturing entire paragraphs
+      }
+    }
+
+    // Generate unique professions based on user input if extraction failed
+    if (professions.length === 0) {
+      // Create professions based on user skills and interests
+      const skills = formData.skills?.toLowerCase() || ""
+      const interests = formData.interests?.toLowerCase() || ""
+      const education = formData.education?.toLowerCase() || ""
+
+      // Generate professions based on user input
+      if (skills.includes("programming") || skills.includes("coding") || interests.includes("technology")) {
+        professions.push("Full Stack Developer", "Mobile App Developer", "DevOps Engineer")
+      }
+
+      if (skills.includes("writing") || interests.includes("writing") || interests.includes("content")) {
+        professions.push("Technical Writer", "Content Strategist", "SEO Specialist")
+      }
+
+      if (skills.includes("design") || interests.includes("design") || interests.includes("creative")) {
+        professions.push("UI/UX Designer", "Product Designer", "Brand Identity Designer")
+      }
+
+      if (skills.includes("data") || interests.includes("data") || interests.includes("analysis")) {
+        professions.push("Business Intelligence Analyst", "Data Engineer", "Machine Learning Engineer")
+      }
+
+      if (education.includes("business") || interests.includes("business")) {
+        professions.push("Business Development Manager", "Strategy Consultant", "Operations Manager")
+      }
+
+      // Add more based on age group
+      if (formData.ageGroup === "student") {
+        professions.push("Research Assistant", "Junior Content Creator", "Social Media Coordinator")
+      } else if (formData.ageGroup === "midCareer" || formData.ageGroup === "lateCareer") {
+        professions.push("Department Director", "Chief Technology Officer", "Executive Coach")
+      }
+
+      // Ensure uniqueness
+      professions = [...new Set(professions)]
     }
 
     // Ensure we have exactly 6 professions with better fallbacks
-    const genericProfessions = [
-      "Software Developer",
-      "Data Analyst",
-      "Project Manager",
-      "Marketing Specialist",
-      "Financial Advisor",
-      "Business Consultant",
-      "UX Designer",
-      "Product Manager",
-      "Digital Content Creator",
-      "Cybersecurity Specialist",
+    const fallbackProfessions = [
+      "Artificial Intelligence Specialist",
+      "Sustainability Consultant",
+      "Digital Transformation Manager",
+      "User Experience Researcher",
+      "Blockchain Developer",
+      "Growth Marketing Strategist",
+      "Cloud Solutions Architect",
+      "Cybersecurity Analyst",
+      "Data Privacy Officer",
+      "E-commerce Operations Manager",
+      "Virtual Reality Developer",
+      "Healthcare Informatics Specialist",
+      "Renewable Energy Consultant",
+      "Remote Work Coordinator",
+      "Bioinformatics Scientist",
+      "Customer Experience Designer",
+      "Supply Chain Analyst",
+      "Agile Project Coach",
+      "Content Marketing Strategist",
+      "Robotics Engineer",
     ]
 
-    // If we couldn't extract any professions, use all generics
-    if (professions.length === 0) {
-      professions = genericProfessions.slice(0, 6)
-    }
-    // If we have some but not enough, add generics to reach 6
-    else
-      while (professions.length < 6) {
-        const genericProfession = genericProfessions[professions.length % genericProfessions.length]
-        if (!professions.includes(genericProfession)) {
-          professions.push(genericProfession)
-        }
+    // If we couldn't extract enough professions, add unique ones from our fallback list
+    while (professions.length < 6) {
+      const randomIndex = Math.floor(Math.random() * fallbackProfessions.length)
+      const profession = fallbackProfessions[randomIndex]
+
+      // Only add if not already in the list
+      if (!professions.includes(profession)) {
+        professions.push(profession)
       }
 
+      // Remove from fallback list to avoid trying the same one again
+      fallbackProfessions.splice(randomIndex, 1)
+
+      // If we've exhausted our fallbacks, break to avoid infinite loop
+      if (fallbackProfessions.length === 0) break
+    }
+
+    // Ensure we have exactly 6 professions
+    professions = professions.slice(0, 6)
+
     // Extract detailed analysis with improved pattern matching
-    let details: CareerDetail[] = []
+    // Define the CareerDetail type if not already defined
+    type CareerDetail = {
+      title: string;
+      match: number;
+      description: string;
+    };
+    
+        let details: CareerDetail[] = []
     try {
       details = text
         .split(/\d+\.\s+Title:|Career \d+:|Profession \d+:|Career Path \d+:/i)
         .filter(
           (section) =>
-            section.includes("Match:") || section.includes("match:") || section.includes("Match percentage:"),
+            section.includes("Match:") ||
+            section.includes("match:") ||
+            section.includes("Match percentage:") ||
+            (section.includes("(") && section.includes("%)")),
         )
         .map((section) => {
-          const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:$$\d+%$$)/)
+          const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:$$\d+%$$|\d+%)/)
           const title = titleMatch ? titleMatch[1].trim() : "Career Option"
 
           const matchPercentage = Number.parseInt(
             section.match(/Match:\s*(\d+)%/i)?.[1] ||
               section.match(/match percentage:\s*(\d+)%/i)?.[1] ||
               section.match(/$$(\d+)%$$/i)?.[1] ||
+              section.match(/(\d+)%/i)?.[1] ||
               "85",
           )
 
@@ -299,7 +422,7 @@ Make each career description unique, detailed, and actionable with specific next
               ? section.indexOf("Match:")
               : section.indexOf("match percentage:") > -1
                 ? section.indexOf("match percentage:")
-                : section.indexOf("(") > -1
+                : section.indexOf("(") > -1 && section.indexOf(")") > -1
                   ? section.indexOf(")") + 1
                   : 0
 
@@ -309,6 +432,7 @@ Make each career description unique, detailed, and actionable with specific next
                   .substring(descriptionStart)
                   .replace(/^Match:\s*\d+%/, "")
                   .replace(/^match percentage:\s*\d+%/, "")
+                  .replace(/^$$\d+%$$/, "")
                   .trim()
               : section.trim()
 
@@ -333,13 +457,54 @@ Make each career description unique, detailed, and actionable with specific next
       details = []
     }
 
-    // Ensure we have exactly 6 details with better fallbacks
-    if (details.length === 0 || details.length < 6) {
-      // Create fallback details for each profession
-      const fallbackDetails = professions.slice(0, 6).map((profession, index) => {
-        return {
+    // Generate detailed descriptions for professions if we don't have enough
+    if (details.length < professions.length) {
+      // Create descriptions for professions that don't have details
+      const existingTitles = details.map((d) => d.title)
+      const professionsWithoutDetails = professions.filter((p) => !existingTitles.includes(p))
+
+      // Generate details for each profession without details
+      professionsWithoutDetails.forEach((profession, index) => {
+        // Generate a match percentage that decreases slightly for each profession
+        const match = 95 - index * 3
+
+        // Create a description based on user input and profession
+        let description = `Skills Alignment: This career aligns well with your ${formData.skills || "skills"} and interest in ${formData.interests || "your areas of interest"}.\n\n`
+
+        description += `Growth Potential: The field of ${profession} is experiencing significant growth with emerging opportunities in specialized areas.\n\n`
+
+        description += `Work-Life Balance: This career typically offers a ${formData.workStyle || "flexible"} work environment with opportunities for professional development.\n\n`
+
+        description += `Required Skills: To excel in this field, consider developing expertise in industry-specific tools and methodologies through specialized courses related to ${profession}.\n\n`
+
+        description += "Salary Range: Entry-level positions typically start at $65,000-$85,000, with senior roles reaching $120,000-$160,000 depending on specialization and location.\n\n"
+
+        description += "Career Progression: Begin in an associate role, advance to specialist within 2-3 years, then to senior or lead positions by year 5, with management opportunities by year 7-10."
+
+        details.push({
           title: profession,
-          match: 90 - index * 3, // Decreasing match percentages
+          match,
+          description,
+        })
+      })
+    }
+
+    // Ensure we have exactly 6 details
+    details = details.slice(0, 6)
+
+    // Match details to professions to ensure consistency
+    const finalDetails = professions.map((profession, index) => {
+      // Find a matching detail or create one
+      const matchingDetail = details.find((d) => d.title === profession)
+      if (matchingDetail) {
+        return matchingDetail
+      }
+
+      // If no matching detail, use one from the details array or create a new one
+      return (
+        details[index] || {
+          title: profession,
+          match: 90 - index * 3,
           description: `
 Skills Alignment: This career path aligns with your ${formData.skills ? formData.skills.split(",")[0] : "technical"} skills and ${formData.interests ? formData.interests.split(",")[0] : "interests"}.
 
@@ -353,32 +518,13 @@ Salary Range: Entry-level positions typically start at $60,000-$75,000, with sen
 
 Career Progression: Begin in an associate role, advance to specialist within 2-3 years, then to senior or lead positions by year 5, with management opportunities by year 7-10.`,
         }
-      })
-
-      // If we have some details, keep them and add fallbacks to reach 6
-      if (details.length > 0) {
-        const existingTitles = details.map((d) => d.title)
-        const neededFallbacks = 6 - details.length
-
-        for (let i = 0; i < neededFallbacks; i++) {
-          const fallbackIndex = i % fallbackDetails.length
-          if (!existingTitles.includes(fallbackDetails[fallbackIndex].title)) {
-            details.push(fallbackDetails[fallbackIndex])
-          }
-        }
-      } else {
-        // If no details were extracted, use all fallbacks
-        details = fallbackDetails
-      }
-    }
-
-    // Ensure we have exactly 6 details
-    details = details.slice(0, 6)
+      )
+    })
 
     const parsedResult = {
       iq,
-      professions: professions.slice(0, 6), // Ensure exactly 6 professions
-      details: details, // Ensure exactly 6 details
+      professions: professions, // Ensure exactly 6 professions
+      details: finalDetails, // Ensure exactly 6 details
     }
 
     return NextResponse.json(parsedResult)
@@ -437,4 +583,3 @@ Career Progression: Begin in an associate role, advance to specialist within 2-3
     return NextResponse.json(fallbackResponse)
   }
 }
-

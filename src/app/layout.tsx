@@ -1,5 +1,5 @@
 import type React from "react"
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import AuthProvider from "@/context/AuthProvider"
@@ -18,10 +18,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Profession Predictor - Find Your Ideal Career Path",
@@ -34,8 +30,8 @@ export default function Layout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${geistSans.variable} ${geistMono.variable} ${inter.variable}`}>
-      <body className={`${geistSans.variable} ${inter.variable}`}>
+    <html lang="en" className={`scroll-smooth ${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable}`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
             <div className="flex min-h-screen flex-col">
