@@ -74,9 +74,9 @@ export const reducer = (state: State, action: ActionType): State => {
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
-        state.toasts.forEach((toast) => {
+        for (const toast of state.toasts) {
           addToRemoveQueue(toast.id)
-        })
+        }
       }
 
       return {
@@ -111,9 +111,9 @@ let memoryState: State = { toasts: [] }
 
 function dispatch(action: ActionType) {
   memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
+  for (const listener of listeners) {
     listener(memoryState)
-  })
+  }
 }
 
 type Toast = Omit<ToasterToast, "id">
@@ -129,7 +129,7 @@ function toast({ ...props }: Toast) {
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
 interface ToastOnOpenChange {
-    (open: boolean): void;
+    onOpenChange: (open: boolean) => void;
 }
 
 interface AddToastAction {
@@ -143,8 +143,10 @@ const addToastAction: AddToastAction = {
         ...props,
         id,
         open: true,
-        onOpenChange: (open: boolean) => {
-            if (!open) dismiss();
+        onOpenChange: {
+            onOpenChange: (open: boolean) => {
+                if (!open) dismiss();
+            },
         },
     },
 };
@@ -169,7 +171,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,
