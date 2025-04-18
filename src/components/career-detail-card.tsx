@@ -28,7 +28,7 @@ export function CareerDetailCard({ title, match, description }: CareerDetail) {
 
       // Check if this line is a section header
       const sectionMatch = sections.find(
-        (section) => trimmedLine.startsWith(section + ":") || trimmedLine === section + ":" || trimmedLine === section,
+        (section) => trimmedLine.startsWith(`${section}:`) || trimmedLine === `${section}:` || trimmedLine === section,
       )
 
       if (sectionMatch) {
@@ -85,8 +85,8 @@ export function CareerDetailCard({ title, match, description }: CareerDetail) {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="space-y-6">
-          {formattedSections.map((section, index) => (
-            <div key={index} className="space-y-2">
+          {formattedSections.map((section) => (
+            <div key={section.section} className="space-y-2">
               <h4 className="font-semibold text-primary">{section.section}</h4>
               <p className="text-sm text-muted-foreground whitespace-pre-line">{section.content}</p>
             </div>

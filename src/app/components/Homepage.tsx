@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { motion, useAnimation } from "framer-motion"
+import { useInView } from "react-intersection-observer"
 import {
   Sparkles,
   Brain,
@@ -31,6 +32,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ProjectUrlInput } from "@/components/project-url-input"
 import { CareerDetailCard } from "@/components/career-detail-card"
 import type { FormData, Question, CareerResult } from "@/types/form"
+import { FadeIn } from "@/components/animations/fade-in"
+import { StaggerChildren } from "@/components/animations/stagger-children"
 
 // Define age groups
 const AGE_GROUPS = [
@@ -85,6 +88,43 @@ export default function Home() {
   })
 
   const [result, setResult] = useState<CareerResult | null>(null)
+
+  // Animation for elements when they come into view
+  const controls = useAnimation()
+  const [ref, inView] = useInView({
+    threshold: 0.2,
+    triggerOnce: true,
+  })
+
+  useEffect(() => {
+    if (inView) {
+      controls.start("visible")
+    }
+  }, [controls, inView])
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  }
 
   // Reset form and start over
   const resetForm = () => {
@@ -903,12 +943,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-background">
-      {/* Hero Section */}
+      {/* Hero Section with animations */}
       <section className="px-4 py-12 md:py-20 text-center space-y-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="space-y-4"
         >
           <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
@@ -919,278 +959,299 @@ export default function Home() {
           </p>
         </motion.div>
 
-        {/* Badges - Stack on mobile */}
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
-          <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
-            <Brain className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-            AI-Powered Analysis
-          </Badge>
-          <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
-            <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-            Personalized Suggestions
-          </Badge>
-          <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
-            <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-            Career Guidance
-          </Badge>
-        </div>
+        {/* Badges with staggered animation */}
+        <StaggerChildren className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} className="badge-wrapper">
+            <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
+              <Brain className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+              AI-Powered Analysis
+            </Badge>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} className="badge-wrapper">
+            <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
+              <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+              Personalized Suggestions
+            </Badge>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }} className="badge-wrapper">
+            <Badge variant="outline" className="text-xs sm:text-sm py-2 px-4">
+              <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+              Career Guidance
+            </Badge>
+          </motion.div>
+        </StaggerChildren>
       </section>
 
-      {/* Main Form Section */}
+      {/* Main Form Section with scroll animations */}
       <section className="container mx-auto px-4 py-6 md:py-10">
-        <Card className="max-w-4xl mx-auto">
-          <CardHeader className="space-y-2 text-center sm:text-left">
-            <CardTitle className="text-2xl sm:text-3xl">Career Profile Analysis</CardTitle>
-            <CardDescription className="text-sm sm:text-base">
-              {currentStep < getTotalSteps()
-                ? "Answer a few questions to get personalized career suggestions"
-                : "Your personalized career analysis based on your profile"}
-            </CardDescription>
-            {status === "unauthenticated" && <GuestAlert predictionsCount={predictionsCount} maxPredictions={3} />}
-          </CardHeader>
+        <FadeIn direction="up" className="max-w-4xl mx-auto">
+          <Card className="max-w-4xl mx-auto">
+            <CardHeader className="space-y-2 text-center sm:text-left">
+              <CardTitle className="text-2xl sm:text-3xl">Career Profile Analysis</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {currentStep < getTotalSteps()
+                  ? "Answer a few questions to get personalized career suggestions"
+                  : "Your personalized career analysis based on your profile"}
+              </CardDescription>
+              {status === "unauthenticated" && <GuestAlert predictionsCount={predictionsCount} maxPredictions={3} />}
+            </CardHeader>
 
-          {/* Progress bar */}
-          {currentStep < getTotalSteps() && (
-            <div className="px-6">
-              <Progress value={getProgressPercentage()} className="h-2" />
-              <p className="text-xs text-muted-foreground text-right mt-1">
-                Step {currentStep + 1} of {getTotalSteps()}
-              </p>
-            </div>
-          )}
-
-          <CardContent className="pt-6">
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+            {/* Progress bar */}
+            {currentStep < getTotalSteps() && (
+              <div className="px-6">
+                <Progress value={getProgressPercentage()} className="h-2" />
+                <p className="text-xs text-muted-foreground text-right mt-1">
+                  Step {currentStep + 1} of {getTotalSteps()}
+                </p>
+              </div>
             )}
 
-            {/* Age group selection */}
-            {currentStep === 0 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Select your current life stage:</h3>
-                  <p className="text-sm text-muted-foreground">
-                    This helps us tailor our questions and career suggestions to your specific situation.
-                  </p>
-
-                  <RadioGroup
-                    value={ageGroup}
-                    onValueChange={handleAgeGroupSelect}
-                    className="grid gap-4 md:grid-cols-2 pt-2"
-                  >
-                    {AGE_GROUPS.map((group) => (
-                      <div key={group.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={group.value} id={group.id} />
-                        <Label htmlFor={group.id} className="cursor-pointer">
-                          {group.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Question steps */}
-            {currentStep > 0 && currentStep < getTotalSteps() && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-                {getQuestions().map((question) => (
-                  <div key={question.id} className="space-y-3">
-                    {question.type !== "url" && (
-                      <Label htmlFor={question.id} className="text-base font-medium">
-                        {question.label}
-                      </Label>
-                    )}
-                    {renderQuestion(question)}
-                  </div>
-                ))}
-              </motion.div>
-            )}
-
-            {/* Results */}
-            {currentStep === getTotalSteps() && result && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
-                  <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <AlertTitle className="text-amber-800 dark:text-amber-300">Important Disclaimer</AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-400">
-                    <p className="mb-2">The career suggestions and IQ estimate provided are:</p>
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Based solely on the information you&apos;ve provided in this questionnaire</li>
-                      <li>Not a substitute for professional career counseling or psychometric testing</li>
-                      <li>Intended as exploratory guidance rather than definitive assessment</li>
-                      <li>Limited by the AI&apos;s understanding of your unique circumstances</li>
-                      <li>
-                        Not considering all factors that influence career success (like local job markets, economic
-                        conditions, etc.)
-                      </li>
-                    </ul>
-                    <p className="mt-2">
-                      We recommend using these insights as a starting point for further research and exploration.
-                    </p>
-                  </AlertDescription>
+            <CardContent className="pt-6">
+              {error && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
                 </Alert>
+              )}
 
-                <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="details">Career Details</TabsTrigger>
-                    <TabsTrigger value="next-steps">Next Steps</TabsTrigger>
-                  </TabsList>
+              {/* Age group selection */}
+              {currentStep === 0 && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Select your current life stage:</h3>
+                    <p className="text-sm text-muted-foreground">
+                      This helps us tailor our questions and career suggestions to your specific situation.
+                    </p>
 
-                  <TabsContent value="overview" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <RadioGroup
+                      value={ageGroup}
+                      onValueChange={handleAgeGroupSelect}
+                      className="grid gap-4 md:grid-cols-2 pt-2"
+                    >
+                      {AGE_GROUPS.map((group) => (
+                        <div key={group.id} className="flex items-center space-x-2">
+                          <RadioGroupItem value={group.value} id={group.id} />
+                          <Label htmlFor={group.id} className="cursor-pointer">
+                            {group.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Question steps */}
+              {currentStep > 0 && currentStep < getTotalSteps() && (
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                  {getQuestions().map((question) => (
+                    <div key={question.id} className="space-y-3">
+                      {question.type !== "url" && (
+                        <Label htmlFor={question.id} className="text-base font-medium">
+                          {question.label}
+                        </Label>
+                      )}
+                      {renderQuestion(question)}
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* Results */}
+              {currentStep === getTotalSteps() && result && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                  <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800">
+                    <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <AlertTitle className="text-amber-800 dark:text-amber-300">Important Disclaimer</AlertTitle>
+                    <AlertDescription className="text-amber-700 dark:text-amber-400">
+                      <p className="mb-2">The career suggestions and IQ estimate provided are:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Based solely on the information you&apos;ve provided in this questionnaire</li>
+                        <li>Not a substitute for professional career counseling or psychometric testing</li>
+                        <li>Intended as exploratory guidance rather than definitive assessment</li>
+                        <li>Limited by the AI&apos;s understanding of your unique circumstances</li>
+                        <li>
+                          Not considering all factors that influence career success (like local job markets, economic
+                          conditions, etc.)
+                        </li>
+                      </ul>
+                      <p className="mt-2">
+                        We recommend using these insights as a starting point for further research and exploration.
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+
+                  <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="overview">Overview</TabsTrigger>
+                      <TabsTrigger value="details">Career Details</TabsTrigger>
+                      <TabsTrigger value="next-steps">Next Steps</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="overview" className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Brain className="h-5 w-5" />
+                              IQ Level Estimate
+                            </CardTitle>
+                            <CardDescription>Based on your profile analysis</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-center">
+                              <span className="text-5xl font-bold text-primary">{result.iq}</span>
+                              <p className="text-sm text-muted-foreground mt-2">Estimated IQ Range</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Heart className="h-5 w-5" />
+                              Top Career Matches
+                            </CardTitle>
+                            <CardDescription>Recommended career paths</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <ul className="space-y-2">
+                              {result.professions?.slice(0, 6).map((profession, index) => (
+                                <li key={profession} className="flex items-center gap-2">
+                                  <Badge variant="secondary">{index + 1}</Badge>
+                                  {profession}
+                                </li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="details">
+                      <div className="space-y-4">
+                        {result.details?.map((detail) => (
+                          <CareerDetailCard
+                            key={detail.title}
+                            title={detail.title}
+                            match={detail.match}
+                            description={detail.description}
+                          />
+                        ))}
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="next-steps">
                       <Card>
                         <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Brain className="h-5 w-5" />
-                            IQ Level Estimate
-                          </CardTitle>
-                          <CardDescription>Based on your profile analysis</CardDescription>
+                          <CardTitle>Recommended Next Steps</CardTitle>
+                          <CardDescription>Follow these steps to pursue your career path</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-center">
-                            <span className="text-5xl font-bold text-primary">{result.iq}</span>
-                            <p className="text-sm text-muted-foreground mt-2">Estimated IQ Range</p>
+                          <div className="space-y-6">
+                            {result.details?.map((detail, index) => (
+                              <div key={detail.title} className="space-y-2">
+                                <h4 className="font-semibold text-lg flex items-center gap-2">
+                                  <Badge>{index + 1}</Badge> {detail.title}
+                                </h4>
+                                <ul className="list-disc list-inside space-y-1 pl-4">
+                                  <li>
+                                    Complete relevant certifications or courses in {detail.title.toLowerCase()} field
+                                  </li>
+                                  <li>Build a portfolio showcasing your skills and projects</li>
+                                  <li>
+                                    Network with professionals in this industry through LinkedIn or industry events
+                                  </li>
+                                </ul>
+                              </div>
+                            ))}
                           </div>
                         </CardContent>
                       </Card>
+                    </TabsContent>
+                  </Tabs>
 
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Heart className="h-5 w-5" />
-                            Top Career Matches
-                          </CardTitle>
-                          <CardDescription>Recommended career paths</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2">
-                            {result.professions?.slice(0, 6).map((profession, index) => (
-                              <li key={profession} className="flex items-center gap-2">
-                                <Badge variant="secondary">{index + 1}</Badge>
-                                {profession}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
+                  <div className="flex justify-center">
+                    <Button variant="outline" onClick={resetForm}>
+                      Start New Analysis
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </CardContent>
 
-                  <TabsContent value="details">
-                    <div className="space-y-4">
-                      {result.details?.map((detail) => (
-                        <CareerDetailCard
-                          key={detail.title}
-                          title={detail.title}
-                          match={detail.match}
-                          description={detail.description}
-                        />
-                      ))}
-                    </div>
-                  </TabsContent>
+            {/* Navigation buttons */}
+            {currentStep > 0 && currentStep < getTotalSteps() && (
+              <CardFooter className="flex justify-between">
+                <Button variant="outline" onClick={handlePrevStep} disabled={loading}>
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
 
-                  <TabsContent value="next-steps">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Recommended Next Steps</CardTitle>
-                        <CardDescription>Follow these steps to pursue your career path</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          {result.details?.map((detail, index) => (
-                            <div key={detail.title} className="space-y-2">
-                              <h4 className="font-semibold text-lg flex items-center gap-2">
-                                <Badge>{index + 1}</Badge> {detail.title}
-                              </h4>
-                              <ul className="list-disc list-inside space-y-1 pl-4">
-                                <li>
-                                  Complete relevant certifications or courses in {detail.title.toLowerCase()} field
-                                </li>
-                                <li>Build a portfolio showcasing your skills and projects</li>
-                                <li>Network with professionals in this industry through LinkedIn or industry events</li>
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-
-                <div className="flex justify-center">
-                  <Button variant="outline" onClick={resetForm}>
-                    Start New Analysis
-                  </Button>
-                </div>
-              </motion.div>
+                <Button onClick={handleNextStep} disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : currentStep === getTotalSteps() - 1 ? (
+                    "Get Results"
+                  ) : (
+                    <>
+                      Next
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
             )}
-          </CardContent>
-
-          {/* Navigation buttons */}
-          {currentStep > 0 && currentStep < getTotalSteps() && (
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={handlePrevStep} disabled={loading}>
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Previous
-              </Button>
-
-              <Button onClick={handleNextStep} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : currentStep === getTotalSteps() - 1 ? (
-                  "Get Results"
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
+          </Card>
+        </FadeIn>
       </section>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
-        <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">AI-Powered Analysis</CardTitle>
-              <CardDescription className="text-sm">
-                Advanced algorithms analyze your profile to provide accurate career suggestions
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">Personalized Matches</CardTitle>
-              <CardDescription className="text-sm">
-                Get career suggestions tailored to your unique combination of skills, experiences, and interests
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card className="flex flex-col h-full">
-            <CardHeader>
-              <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              <CardTitle className="text-lg sm:text-xl">Career Guidance</CardTitle>
-              <CardDescription className="text-sm">
-                Receive detailed insights and next steps to pursue your ideal career path
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+      {/* Features Section with scroll animations */}
+      <section className="container mx-auto px-4 py-12 md:py-20" ref={ref}>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate={controls}
+          className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3"
+        >
+          <motion.div variants={itemVariants} className="feature-card">
+            <Card className="flex flex-col h-full">
+              <CardHeader>
+                <Brain className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <CardTitle className="text-lg sm:text-xl">AI-Powered Analysis</CardTitle>
+                <CardDescription className="text-sm">
+                  Advanced algorithms analyze your profile to provide accurate career suggestions
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+          <motion.div variants={itemVariants} className="feature-card">
+            <Card className="flex flex-col h-full">
+              <CardHeader>
+                <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <CardTitle className="text-lg sm:text-xl">Personalized Matches</CardTitle>
+                <CardDescription className="text-sm">
+                  Get career suggestions tailored to your unique combination of skills, experiences, and interests
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+          <motion.div variants={itemVariants} className="feature-card">
+            <Card className="flex flex-col h-full">
+              <CardHeader>
+                <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                <CardTitle className="text-lg sm:text-xl">Career Guidance</CardTitle>
+                <CardDescription className="text-sm">
+                  Receive detailed insights and next steps to pursue your ideal career path
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        </motion.div>
       </section>
     </div>
   )
