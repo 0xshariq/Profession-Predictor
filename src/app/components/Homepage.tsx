@@ -160,7 +160,7 @@ export default function Home() {
     const fetchPredictionsCount = async () => {
       if (status === "unauthenticated") {
         try {
-          const response = await fetch("/api/guest/predictions-count")
+          const response = await fetch("/api/predictions-count")
           if (response.ok) {
             const data = await response.json()
             setPredictionsCount(data.count)

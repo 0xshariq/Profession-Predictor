@@ -37,7 +37,7 @@ const Navbar = () => {
     const checkGuestStatus = async () => {
       if (status === "unauthenticated") {
         try {
-          const response = await fetch("/api/guest/check")
+          const response = await fetch("/api/guest-check")
           if (response.ok) {
             const data = await response.json()
             setIsGuest(data.isGuest)
@@ -54,7 +54,7 @@ const Navbar = () => {
   const handleSignOut = async () => {
     if (isGuest) {
       // Clear guest cookie
-      await fetch("/api/guest/logout", { method: "POST" })
+      await fetch("/api/guest-logout", { method: "POST" })
       setIsGuest(false)
     } else {
       // Sign out from NextAuth
