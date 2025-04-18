@@ -3,7 +3,7 @@ import { cookies } from "next/headers"
 import { dbConnect } from "@/lib/dbConnect"
 import GuestModel from "@/models/Guest.models"
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import type { FormData } from "@/types/form"
+import type { FormData, CareerDetail } from "@/types/form"
 
 if (!process.env.GOOGLE_AI_API_KEY) {
   throw new Error("GOOGLE_AI_API_KEY is not defined in the environment variables.")
@@ -189,6 +189,9 @@ export async function POST(req: Request) {
     // Create a timestamp to ensure uniqueness in each request
     const timestamp = new Date().toISOString()
 
+    // Generate a random seed for IQ calculation to ensure uniqueness
+    const randomSeed = Math.floor(Math.random() * 1000).toString()
+
     // List of common professions to avoid (unless they truly match the profile)
     const commonProfessions = [
       "Software Developer",
@@ -205,7 +208,7 @@ export async function POST(req: Request) {
     const prompt = `As a career counselor AI, analyze the following personal profile to provide comprehensive and detailed career guidance:
 
 CRITICAL INSTRUCTIONS (YOU MUST FOLLOW THESE EXACTLY):
-- Generate EXACTLY 6 unique and highly specific career paths that precisely match this individual's profile
+- Generate EXACTLY 10 unique and highly specific career paths that precisely match this individual's profile
 - DO NOT suggest generic careers like ${commonProfessions} unless they truly match the specific skills and interests
 - NEVER repeat the same set of professions you've suggested before
 - Each career must be highly specific to the individual's unique combination of skills, interests, and background
@@ -215,7 +218,7 @@ CRITICAL INSTRUCTIONS (YOU MUST FOLLOW THESE EXACTLY):
 - If a project/portfolio URL is provided, analyze it deeply for additional insights
 - Consider the person's age group, education level, and life stage for appropriate suggestions
 - Vary the match percentages realistically between 70-98% based on actual alignment
-- Generate a unique IQ estimate between 110-140 based on the complexity of skills, education level, and interests
+- Generate a unique IQ estimate between 110-140 based on the complexity of skills, education level, and interests (use random seed: ${randomSeed})
 - This request was made at ${timestamp} - ensure your response is unique and different from previous responses
 
 For each career suggestion, include:
@@ -255,8 +258,8 @@ Make each career description unique, detailed, and actionable with specific next
     }
 
     // Improved IQ extraction with fallback and range validation
-    let iq = 120 // Default reasonable value if extraction fails
-    const iqMatch = text.match(/IQ.*?(\d+)/i) || text.match(/estimated IQ.*?(\d+)/i) || text.match(/score of (\d+)/i) || null;
+    let iq = Math.floor(Math.random() * (140 - 110 + 1)) + 110 // Default random IQ between 110-140
+    const iqMatch = text.match(/IQ.*?(\d+)/i) || text.match(/estimated IQ.*?(\d+)/i) || text.match(/score of (\d+)/i)
     if (iqMatch?.[1]) {
       const extractedIQ = Number.parseInt(iqMatch[1])
       // Validate the IQ is in a reasonable range
@@ -285,7 +288,7 @@ Make each career description unique, detailed, and actionable with specific next
         professions = careerSections
           .slice(1) // Skip the first element which is before any title
           .map((section) => {
-            const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:$$\d+%$$|\d+%)/)
+            const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:\$\d+%\$|\d+%)/)
             return titleMatch ? titleMatch[1].trim() : ""
           })
           .filter((title) => title)
@@ -341,7 +344,7 @@ Make each career description unique, detailed, and actionable with specific next
       professions = [...new Set(professions)]
     }
 
-    // Ensure we have exactly 6 professions with better fallbacks
+    // Ensure we have at least 10 professions with better fallbacks
     const fallbackProfessions = [
       "Artificial Intelligence Specialist",
       "Sustainability Consultant",
@@ -366,7 +369,7 @@ Make each career description unique, detailed, and actionable with specific next
     ]
 
     // If we couldn't extract enough professions, add unique ones from our fallback list
-    while (professions.length < 6) {
+    while (professions.length < 10) {
       const randomIndex = Math.floor(Math.random() * fallbackProfessions.length)
       const profession = fallbackProfessions[randomIndex]
 
@@ -382,18 +385,8 @@ Make each career description unique, detailed, and actionable with specific next
       if (fallbackProfessions.length === 0) break
     }
 
-    // Ensure we have exactly 6 professions
-    professions = professions.slice(0, 6)
-
     // Extract detailed analysis with improved pattern matching
-    // Define the CareerDetail type if not already defined
-    type CareerDetail = {
-      title: string;
-      match: number;
-      description: string;
-    };
-    
-        let details: CareerDetail[] = []
+    let details: CareerDetail[] = []
     try {
       details = text
         .split(/\d+\.\s+Title:|Career \d+:|Profession \d+:|Career Path \d+:/i)
@@ -405,13 +398,13 @@ Make each career description unique, detailed, and actionable with specific next
             (section.includes("(") && section.includes("%)")),
         )
         .map((section) => {
-          const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:$$\d+%$$|\d+%)/)
+          const titleMatch = section.match(/^([^:]+?)(?:\r?\n|:)/) || section.match(/^([^(]+?)(?:\$\d+%\$|\d+%)/)
           const title = titleMatch ? titleMatch[1].trim() : "Career Option"
 
           const matchPercentage = Number.parseInt(
             section.match(/Match:\s*(\d+)%/i)?.[1] ||
               section.match(/match percentage:\s*(\d+)%/i)?.[1] ||
-              section.match(/$$(\d+)%$$/i)?.[1] ||
+              section.match(/\$(\d+)%\$/i)?.[1] ||
               section.match(/(\d+)%/i)?.[1] ||
               "85",
           )
@@ -432,7 +425,7 @@ Make each career description unique, detailed, and actionable with specific next
                   .substring(descriptionStart)
                   .replace(/^Match:\s*\d+%/, "")
                   .replace(/^match percentage:\s*\d+%/, "")
-                  .replace(/^$$\d+%$$/, "")
+                  .replace(/^\$\d+%\$/, "")
                   .trim()
               : section.trim()
 
@@ -477,9 +470,11 @@ Make each career description unique, detailed, and actionable with specific next
 
         description += `Required Skills: To excel in this field, consider developing expertise in industry-specific tools and methodologies through specialized courses related to ${profession}.\n\n`
 
-        description += "Salary Range: Entry-level positions typically start at $65,000-$85,000, with senior roles reaching $120,000-$160,000 depending on specialization and location.\n\n"
+        description +=
+          "Salary Range: Entry-level positions typically start at $65,000-$85,000, with senior roles reaching $120,000-$160,000 depending on specialization and location.\n\n"
 
-        description += "Career Progression: Begin in an associate role, advance to specialist within 2-3 years, then to senior or lead positions by year 5, with management opportunities by year 7-10."
+        description +=
+          "Career Progression: Begin in an associate role, advance to specialist within 2-3 years, then to senior or lead positions by year 5, with management opportunities by year 7-10."
 
         details.push({
           title: profession,
@@ -489,23 +484,21 @@ Make each career description unique, detailed, and actionable with specific next
       })
     }
 
-    // Ensure we have exactly 6 details
-    details = details.slice(0, 6)
-
     // Match details to professions to ensure consistency
-    const finalDetails = professions.map((profession, index) => {
+    const finalDetails = professions.map((profession) => {
       // Find a matching detail or create one
       const matchingDetail = details.find((d) => d.title === profession)
       if (matchingDetail) {
         return matchingDetail
       }
 
-      // If no matching detail, use one from the details array or create a new one
-      return (
-        details[index] || {
-          title: profession,
-          match: 90 - index * 3,
-          description: `
+      // If no matching detail, create a new one
+      const randomMatch = Math.floor(Math.random() * (98 - 70 + 1)) + 70
+
+      return {
+        title: profession,
+        match: randomMatch,
+        description: `
 Skills Alignment: This career path aligns with your ${formData.skills ? formData.skills.split(",")[0] : "technical"} skills and ${formData.interests ? formData.interests.split(",")[0] : "interests"}.
 
 Growth Potential: This field is experiencing significant growth with emerging opportunities in specialized areas.
@@ -517,14 +510,13 @@ Required Skills: Consider developing expertise in industry-specific tools and me
 Salary Range: Entry-level positions typically start at $60,000-$75,000, with senior roles reaching $120,000-$150,000 depending on specialization and location.
 
 Career Progression: Begin in an associate role, advance to specialist within 2-3 years, then to senior or lead positions by year 5, with management opportunities by year 7-10.`,
-        }
-      )
+      }
     })
 
     const parsedResult = {
       iq,
-      professions: professions, // Ensure exactly 6 professions
-      details: finalDetails, // Ensure exactly 6 details
+      professions: professions.slice(0, 10), // Return up to 10 professions
+      details: finalDetails.slice(0, 10), // Return up to 10 details
     }
 
     return NextResponse.json(parsedResult)
@@ -532,7 +524,7 @@ Career Progression: Begin in an associate role, advance to specialist within 2-3
     console.error("API Error:", error)
     // Return a fallback response if an error occurs
     const fallbackResponse = {
-      iq: 120,
+      iq: Math.floor(Math.random() * (140 - 110 + 1)) + 110, // Random IQ between 110-140
       professions: [
         "Software Developer",
         "Data Analyst",
@@ -540,6 +532,10 @@ Career Progression: Begin in an associate role, advance to specialist within 2-3
         "Marketing Specialist",
         "Financial Advisor",
         "Business Consultant",
+        "UX Designer",
+        "Product Manager",
+        "Digital Content Creator",
+        "Cybersecurity Specialist",
       ],
       details: [
         {
@@ -577,6 +573,30 @@ Career Progression: Begin in an associate role, advance to specialist within 2-3
           match: 75,
           description:
             "Skills Alignment: Your problem-solving abilities and business knowledge are valuable for consulting.\n\nGrowth Potential: Businesses continually seek expertise to improve operations and strategy.\n\nWork-Life Balance: Can involve travel and variable hours but often with flexibility.\n\nRequired Skills: Develop industry expertise, business analysis methods, and presentation skills.\n\nSalary Range: Entry positions start at $65,000-$85,000, with experienced consultants earning $120,000-$180,000+.\n\nCareer Progression: Begin as a junior consultant, advance to consultant in 2-3 years, and senior consultant or specialized expert by year 5-7.",
+        },
+        {
+          title: "UX Designer",
+          match: 73,
+          description:
+            "Skills Alignment: Your creative thinking and user-focused mindset are valuable for UX design.\n\nGrowth Potential: User experience is increasingly prioritized across digital products and services.\n\nWork-Life Balance: Generally offers good work-life balance with some deadline-driven periods.\n\nRequired Skills: Develop proficiency in design tools, user research methods, and prototyping.\n\nSalary Range: Entry positions start at $60,000-$75,000, with senior designers earning $100,000-$140,000+.\n\nCareer Progression: Start as a junior designer, advance to mid-level in 2-3 years, and senior or lead positions by year 5-7.",
+        },
+        {
+          title: "Product Manager",
+          match: 70,
+          description:
+            "Skills Alignment: Your strategic thinking and communication skills align well with product management.\n\nGrowth Potential: Product managers are in high demand across tech and other industries.\n\nWork-Life Balance: Can be demanding but offers intellectual stimulation and variety.\n\nRequired Skills: Develop product strategy, user research, and cross-functional collaboration skills.\n\nSalary Range: Starting around $70,000-$90,000, with experienced managers earning $120,000-$160,000+.\n\nCareer Progression: Begin as an associate product manager, advance to product manager in 2-3 years, and senior or director roles by year 6-8.",
+        },
+        {
+          title: "Digital Content Creator",
+          match: 68,
+          description:
+            "Skills Alignment: Your creativity and communication abilities are well-suited for content creation.\n\nGrowth Potential: Digital content continues to grow in importance for brands and marketing.\n\nWork-Life Balance: Can offer flexibility but may require consistent output and social media presence.\n\nRequired Skills: Develop content strategy, multimedia production, and audience engagement skills.\n\nSalary Range: Varies widely from $45,000-$70,000 for staff positions, with freelance and influencer potential much higher.\n\nCareer Progression: Start creating content in specific niches, build audience and portfolio, then expand to larger platforms or specialized content roles.",
+        },
+        {
+          title: "Cybersecurity Specialist",
+          match: 65,
+          description:
+            "Skills Alignment: Your analytical thinking and attention to detail are valuable for cybersecurity.\n\nGrowth Potential: Cybersecurity professionals are in extremely high demand across all industries.\n\nWork-Life Balance: Can involve on-call rotations but generally offers stable schedules.\n\nRequired Skills: Develop network security, threat analysis, and security tool proficiency.\n\nSalary Range: Entry positions start at $65,000-$85,000, with experienced specialists earning $110,000-$160,000+.\n\nCareer Progression: Begin as a security analyst, advance to security engineer in 2-3 years, and architect or management roles by year 5-7.",
         },
       ],
     }

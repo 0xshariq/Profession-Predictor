@@ -1,6 +1,6 @@
 export interface FormData {
   // Common fields
-  ageGroup: "student" | "college" | "earlyCareer" | "midCareer" | "lateCareer" | "careerChange";
+  ageGroup: "" | "student" | "college" | "earlyCareer" | "midCareer" | "lateCareer" | "careerChange";
   education: string
   hobbies: string
   skills: string

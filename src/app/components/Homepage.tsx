@@ -120,7 +120,7 @@ export default function Home() {
     const fetchPredictionsCount = async () => {
       if (status === "unauthenticated") {
         try {
-          const response = await fetch("/api/predictions-count")
+          const response = await fetch("/api/guest/predictions-count")
           if (response.ok) {
             const data = await response.json()
             setPredictionsCount(data.count)
@@ -357,21 +357,24 @@ export default function Home() {
           return [
             {
               id: "favoriteSubjects",
-              label: "What are your favorite subjects in school?",
+              label: "What subjects or topics do you find most engaging in school?",
               type: "textarea",
-              placeholder: "E.g., mathematics, biology, literature, art, computer science, history, physics...",
+              placeholder:
+                "E.g., computer science, creative writing, environmental science, psychology, digital media...",
             },
             {
               id: "extracurriculars",
-              label: "What extracurricular activities are you involved in?",
+              label: "What activities are you involved in outside of regular classes?",
               type: "textarea",
-              placeholder: "E.g., sports teams, clubs, volunteer work, student government, music, debate...",
+              placeholder:
+                "E.g., coding club, esports team, environmental activism, social media content creation, entrepreneurship club...",
             },
             {
               id: "careerGoals",
-              label: "What are your early career goals or aspirations?",
+              label: "What kind of impact would you like to make in your future career?",
               type: "textarea",
-              placeholder: "E.g., college plans, fields you're curious about, dream jobs, impact you want to make...",
+              placeholder:
+                "E.g., developing sustainable technology, creating digital content, helping others with mental health, building innovative products...",
             },
           ]
 
@@ -379,27 +382,29 @@ export default function Home() {
           return [
             {
               id: "major",
-              label: "What is your major or field of study?",
+              label: "What is your major or primary field of study?",
               type: "input",
-              placeholder: "E.g., Computer Science, Business, Psychology, Engineering, Arts...",
+              placeholder: "E.g., Data Science, Digital Media, Environmental Studies, Psychology...",
             },
             {
               id: "minors",
-              label: "Do you have any minors or secondary fields of study?",
+              label: "Do you have any minors, concentrations, or secondary interests?",
               type: "input",
-              placeholder: "E.g., Mathematics, Economics, Art, Communication, Data Science...",
+              placeholder: "E.g., UX Design, Sustainability, AI Ethics, Entrepreneurship...",
             },
             {
               id: "internships",
-              label: "Have you completed any internships or work experiences?",
+              label: "What real-world experience have you gained during your studies?",
               type: "textarea",
-              placeholder: "Describe any internships, part-time jobs, or relevant experiences...",
+              placeholder:
+                "Describe internships, research projects, freelance work, campus jobs, or volunteer experiences...",
             },
             {
               id: "academicInterests",
-              label: "What specific topics within your field interest you the most?",
+              label: "What emerging trends or technologies in your field interest you most?",
               type: "textarea",
-              placeholder: "E.g., specific research areas, technologies, theories, or applications...",
+              placeholder:
+                "E.g., blockchain applications, sustainable design, AI in healthcare, remote work technologies...",
             },
           ]
 
@@ -407,27 +412,29 @@ export default function Home() {
           return [
             {
               id: "workExperience",
-              label: "Describe your work experience so far",
+              label: "What roles and responsibilities have you had in your career so far?",
               type: "textarea",
-              placeholder: "Include roles, responsibilities, industries, and years of experience...",
+              placeholder: "Include positions, key projects, technologies used, and industries you've worked in...",
             },
             {
               id: "achievements",
-              label: "What are your key professional achievements?",
+              label: "What accomplishments are you most proud of professionally?",
               type: "textarea",
-              placeholder: "Projects completed, awards, promotions, or other accomplishments...",
+              placeholder:
+                "E.g., launching products, improving processes, leading initiatives, solving complex problems...",
             },
             {
               id: "certifications",
-              label: "Do you have any professional certifications or specialized training?",
+              label: "What specialized training or credentials have you acquired?",
               type: "textarea",
-              placeholder: "List any certifications, courses, or specialized training you've completed...",
+              placeholder: "List certifications, bootcamps, online courses, or specialized training programs...",
             },
             {
               id: "careerAspirations",
-              label: "Where do you see your career heading in the next 5 years?",
+              label: "How do you see your career evolving in the next few years?",
               type: "textarea",
-              placeholder: "E.g., leadership roles, specialization, industry change, skill development...",
+              placeholder:
+                "E.g., remote work opportunities, leadership roles, specialized expertise, work-life balance goals...",
             },
           ]
 
@@ -435,27 +442,30 @@ export default function Home() {
           return [
             {
               id: "workExperience",
-              label: "Summarize your career journey and current role",
+              label: "What expertise have you developed throughout your career journey?",
               type: "textarea",
-              placeholder: "Include key roles, industries, and areas of expertise developed over your career...",
+              placeholder:
+                "Describe your progression, leadership experience, and areas where you've developed mastery...",
             },
             {
               id: "achievements",
-              label: "What are your most significant professional accomplishments?",
+              label: "What significant impact have you made in your field or organization?",
               type: "textarea",
-              placeholder: "Major projects, leadership roles, innovations, or business impact...",
+              placeholder: "E.g., scaling teams, transforming processes, mentoring others, driving innovation...",
             },
             {
               id: "certifications",
-              label: "What specialized knowledge or credentials have you acquired?",
+              label: "What advanced knowledge or specialized expertise sets you apart?",
               type: "textarea",
-              placeholder: "Advanced certifications, specialized training, or expertise areas...",
+              placeholder:
+                "Include advanced certifications, specialized domain knowledge, or unique skill combinations...",
             },
             {
               id: "careerChallenges",
-              label: "What career challenges or growth opportunities are you currently facing?",
+              label: "What professional growth opportunities are you currently seeking?",
               type: "textarea",
-              placeholder: "E.g., skill gaps, industry changes, leadership transitions, work-life balance...",
+              placeholder:
+                "E.g., adapting to industry disruption, work-life integration, leadership transitions, remote team management...",
             },
           ]
 
@@ -463,27 +473,28 @@ export default function Home() {
           return [
             {
               id: "workExperience",
-              label: "Describe your career journey and areas of expertise",
+              label: "What has been the focus and evolution of your professional journey?",
               type: "textarea",
-              placeholder: "Include significant roles, industry experience, and specialized knowledge...",
+              placeholder: "Highlight key career transitions, leadership roles, and areas of significant expertise...",
             },
             {
               id: "achievements",
-              label: "What are the major accomplishments that define your career?",
+              label: "What legacy have you built throughout your career?",
               type: "textarea",
-              placeholder: "Leadership positions, major projects, mentorship, industry contributions...",
+              placeholder: "E.g., teams built, organizations transformed, innovations created, mentees developed...",
             },
             {
               id: "futureGoals",
-              label: "What are your goals for this stage of your career?",
+              label: "What would you like to accomplish in this phase of your career?",
               type: "textarea",
-              placeholder: "E.g., knowledge transfer, mentorship, consulting, reduced hours, new challenges...",
+              placeholder:
+                "E.g., knowledge transfer, flexible work arrangements, consulting opportunities, passion projects...",
             },
             {
               id: "legacyInterests",
-              label: "What aspects of your work or expertise would you like to pass on?",
+              label: "What expertise would you most like to share with the next generation?",
               type: "textarea",
-              placeholder: "Skills, knowledge, or values you'd like to share with the next generation...",
+              placeholder: "Skills, wisdom, or perspectives you've gained that could benefit others...",
             },
           ]
 
@@ -491,38 +502,40 @@ export default function Home() {
           return [
             {
               id: "reasonForChange",
-              label: "Why are you considering a career change?",
+              label: "What's motivating you to explore new career directions?",
               type: "textarea",
               placeholder:
-                "E.g., seeking more fulfillment, better work-life balance, new challenges, industry shifts...",
+                "E.g., seeking more meaningful work, adapting to industry changes, pursuing long-held interests, better work-life integration...",
             },
             {
               id: "transferableSkills",
-              label: "What transferable skills do you have from your current/previous career?",
+              label: "What capabilities from your current career could be valuable in new fields?",
               type: "textarea",
-              placeholder: "Skills that could be valuable in a different field or industry...",
+              placeholder:
+                "E.g., project management, client relationships, analytical thinking, communication skills...",
             },
             {
               id: "desiredWorkEnvironment",
-              label: "What type of work environment are you looking for in your new career?",
+              label: "What type of work culture and environment would energize you?",
               type: "textarea",
-              placeholder: "Describe your ideal workplace culture, values, and environment...",
+              placeholder: "Describe your ideal workplace values, flexibility, collaboration style, and purpose...",
             },
             {
               id: "newFieldInterests",
-              label: "What fields or industries are you most interested in exploring?",
+              label: "What emerging industries or roles have captured your interest?",
               type: "textarea",
-              placeholder: "Areas you're curious about or have been researching for your career change...",
+              placeholder:
+                "E.g., remote-first companies, sustainability sector, digital transformation, creative fields...",
             },
             {
               id: "retrainingWillingness",
-              label: "How open are you to additional education or training?",
+              label: "How do you feel about acquiring new skills or credentials?",
               type: "select",
               options: [
-                { value: "veryOpen", label: "Very open - willing to pursue degrees or certifications" },
-                { value: "somewhatOpen", label: "Somewhat open - prefer shorter courses or on-the-job training" },
-                { value: "minimalTraining", label: "Prefer minimal training - want to leverage existing skills" },
-                { value: "undecided", label: "Undecided - depends on the field and requirements" },
+                { value: "veryOpen", label: "Excited to learn - willing to pursue significant education" },
+                { value: "somewhatOpen", label: "Moderately open - prefer shorter courses or on-the-job learning" },
+                { value: "minimalTraining", label: "Prefer to leverage existing skills with minimal retraining" },
+                { value: "undecided", label: "Still exploring options and requirements" },
               ],
             },
           ]
@@ -548,24 +561,24 @@ export default function Home() {
         finalQuestions.push(
           {
             id: "mentorshipInterest",
-            label: "Are you interested in finding mentors in your field of interest?",
+            label: "How important is mentorship in your learning and development?",
             type: "select",
             options: [
-              { value: "veryInterested", label: "Very interested" },
-              { value: "somewhatInterested", label: "Somewhat interested" },
-              { value: "notInterested", label: "Not interested" },
+              { value: "veryInterested", label: "Essential - actively seeking mentors" },
+              { value: "somewhatInterested", label: "Valuable - open to guidance when available" },
+              { value: "notInterested", label: "Prefer self-directed learning" },
             ],
           },
           {
             id: "learningStyle",
-            label: "How do you learn best?",
+            label: "How do you best absorb and apply new information?",
             type: "select",
             options: [
-              { value: "visual", label: "Visual (images, diagrams, videos)" },
-              { value: "auditory", label: "Auditory (listening, discussions)" },
-              { value: "reading", label: "Reading/Writing" },
-              { value: "kinesthetic", label: "Hands-on/Practical application" },
-              { value: "mixed", label: "Mixed approach" },
+              { value: "visual", label: "Visual content (videos, infographics, diagrams)" },
+              { value: "auditory", label: "Audio content (podcasts, discussions, lectures)" },
+              { value: "reading", label: "Written content (articles, books, documentation)" },
+              { value: "kinesthetic", label: "Hands-on practice and experimentation" },
+              { value: "mixed", label: "Mixed approach depending on the subject" },
             ],
           },
         )
@@ -573,24 +586,24 @@ export default function Home() {
         finalQuestions.push(
           {
             id: "mentorshipInterest",
-            label: "Are you interested in finding mentors in your field of interest?",
+            label: "How do you feel about connecting with industry professionals?",
             type: "select",
             options: [
-              { value: "veryInterested", label: "Very interested" },
-              { value: "somewhatInterested", label: "Somewhat interested" },
-              { value: "notInterested", label: "Not interested" },
+              { value: "veryInterested", label: "Actively seeking mentors and networking opportunities" },
+              { value: "somewhatInterested", label: "Open to guidance but not actively pursuing it" },
+              { value: "notInterested", label: "Focusing on academics before industry connections" },
             ],
           },
           {
             id: "graduationPlans",
-            label: "What are your plans after graduation?",
+            label: "What's your vision for after completing your current studies?",
             type: "select",
             options: [
-              { value: "immediateWork", label: "Enter workforce immediately" },
-              { value: "gradSchool", label: "Pursue graduate studies" },
-              { value: "entrepreneurship", label: "Start a business/freelance" },
-              { value: "fellowship", label: "Apply for fellowships/research positions" },
-              { value: "undecided", label: "Still exploring options" },
+              { value: "immediateWork", label: "Join the workforce in my field" },
+              { value: "gradSchool", label: "Continue to advanced studies" },
+              { value: "entrepreneurship", label: "Start a business or work independently" },
+              { value: "fellowship", label: "Pursue research or specialized programs" },
+              { value: "undecided", label: "Exploring multiple options" },
             ],
           },
         )
@@ -1058,7 +1071,7 @@ export default function Home() {
                         <CardContent>
                           <ul className="space-y-2">
                             {result.professions?.slice(0, 6).map((profession, index) => (
-                              <li key={index} className="flex items-center gap-2">
+                              <li key={profession} className="flex items-center gap-2">
                                 <Badge variant="secondary">{index + 1}</Badge>
                                 {profession}
                               </li>
@@ -1071,9 +1084,9 @@ export default function Home() {
 
                   <TabsContent value="details">
                     <div className="space-y-4">
-                      {result.details?.map((detail, index) => (
+                      {result.details?.map((detail) => (
                         <CareerDetailCard
-                          key={index}
+                          key={detail.title}
                           title={detail.title}
                           match={detail.match}
                           description={detail.description}
@@ -1091,7 +1104,7 @@ export default function Home() {
                       <CardContent>
                         <div className="space-y-6">
                           {result.details?.map((detail, index) => (
-                            <div key={index} className="space-y-2">
+                            <div key={detail.title} className="space-y-2">
                               <h4 className="font-semibold text-lg flex items-center gap-2">
                                 <Badge>{index + 1}</Badge> {detail.title}
                               </h4>
@@ -1182,4 +1195,3 @@ export default function Home() {
     </div>
   )
 }
-
