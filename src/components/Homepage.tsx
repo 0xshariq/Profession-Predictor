@@ -918,7 +918,9 @@ export default function Home() {
         )
 
       case "url":
-        return <ProjectUrlInput value={formData[question.id] || ""} onChange={(value) => handleChange(question.id, value)} />
+        return (
+          <ProjectUrlInput value={formData[question.id] || ""} onChange={(value) => handleChange(question.id, value)} />
+        )
 
       case "select":
         return (
@@ -1117,12 +1119,25 @@ export default function Home() {
                           </CardHeader>
                           <CardContent>
                             <ul className="space-y-2">
-                              {result.professions?.slice(0, 6).map((profession, index) => (
-                                <li key={profession} className="flex items-center gap-2">
-                                  <Badge variant="secondary">{index + 1}</Badge>
-                                  {profession}
-                                </li>
-                              ))}
+                              {result.professions?.slice(0, 6).map((profession, index) => {
+                                // Find the matching detail to get the match percentage
+                                const matchDetail = result.details?.find((detail) => detail.title === profession)
+                                const matchPercentage = matchDetail ? matchDetail.match : null
+
+                                return (
+                                  <li key={profession} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="secondary">{index + 1}</Badge>
+                                      {profession}
+                                    </div>
+                                    {matchPercentage && (
+                                      <Badge variant="outline" className="ml-2">
+                                        {matchPercentage}%
+                                      </Badge>
+                                    )}
+                                  </li>
+                                )
+                              })}
                             </ul>
                           </CardContent>
                         </Card>
@@ -1131,9 +1146,9 @@ export default function Home() {
 
                     <TabsContent value="details">
                       <div className="space-y-4">
-                        {result.details?.map((detail) => (
+                        {result.details?.map((detail, index) => (
                           <CareerDetailCard
-                            key={detail.title}
+                            key={`${detail.title}-${index}`}
                             title={detail.title}
                             match={detail.match}
                             description={detail.description}
@@ -1151,9 +1166,12 @@ export default function Home() {
                         <CardContent>
                           <div className="space-y-6">
                             {result.details?.map((detail, index) => (
-                              <div key={detail.title} className="space-y-2">
+                              <div key={`${detail.title}-${index}`} className="space-y-2">
                                 <h4 className="font-semibold text-lg flex items-center gap-2">
-                                  <Badge>{index + 1}</Badge> {detail.title}
+                                  <Badge>{index + 1}</Badge> {detail.title}{" "}
+                                  <Badge variant="outline" className="ml-2">
+                                    {detail.match}%
+                                  </Badge>
                                 </h4>
                                 <ul className="list-disc list-inside space-y-1 pl-4">
                                   <li>

@@ -80,7 +80,9 @@ export function CareerDetailCard({ title, match, description }: CareerDetail) {
       <CardHeader className="bg-muted/50">
         <div className="flex justify-between items-center">
           <CardTitle>{title}</CardTitle>
-          <Badge variant={match > 90 ? "default" : match > 80 ? "secondary" : "outline"}>Match: {match}%</Badge>
+          <Badge variant={match > 90 ? "default" : match > 80 ? "secondary" : "outline"} className="text-sm px-3 py-1">
+            Match: {match}%
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="pt-6">
@@ -96,4 +98,3 @@ export function CareerDetailCard({ title, match, description }: CareerDetail) {
     </Card>
   )
 }
-
