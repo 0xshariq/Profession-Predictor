@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/signIn" || pathname === "/signUp" || pathname === "/guest") {
       // Redirect all authenticated users to homepage
       return NextResponse.redirect(new URL("/", request.url))
-    }
+    } 
 
     // You can add specific redirects based on user type if needed
     // For example:
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   //   }
   // }
 
-  return NextResponse.next() // Allow request if none of the conditions matched
+  return NextResponse.next()
 }
 
 export const config = {

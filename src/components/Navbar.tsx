@@ -1,75 +1,82 @@
-"use client"
+"use client";
 
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useState, useEffect } from "react"
-import { Menu, Home, Info, Mail, LogIn, LogOut, User } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+import { Menu, Home, Info, Mail, LogIn, LogOut, User, User2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 interface NavbarUser {
-  username?: string
-  email?: string
-  isGuest?: boolean
+  username?: string;
+  email?: string;
+  isGuest?: boolean;
 }
 
 const Navbar = () => {
-  const { data: session, status } = useSession()
-  const user: NavbarUser = session?.user as NavbarUser
-  const [isOpen, setIsOpen] = useState(false)
-  const [isGuest, setIsGuest] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const router = useRouter()
+  const { data: session, status } = useSession();
+  const user: NavbarUser = session?.user as NavbarUser;
+  const [isOpen, setIsOpen] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
 
   // Check for scroll position to add shadow
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Check for guest cookie if not authenticated via NextAuth
   useEffect(() => {
     const checkGuestStatus = async () => {
       if (status === "unauthenticated") {
         try {
-          const response = await fetch("/api/guest-check")
+          const response = await fetch("/api/guest-check");
           if (response.ok) {
-            const data = await response.json()
-            setIsGuest(data.isGuest)
+            const data = await response.json();
+            setIsGuest(data.isGuest);
           }
         } catch (error) {
-          console.error("Error checking guest status:", error)
+          console.error("Error checking guest status:", error);
         }
       }
-    }
+    };
 
-    checkGuestStatus()
-  }, [status])
+    checkGuestStatus();
+  }, [status]);
 
   const handleSignOut = async () => {
     if (isGuest) {
       // Clear guest cookie
-      await fetch("/api/guest-logout", { method: "POST" })
-      setIsGuest(false)
+      await fetch("/api/guest-logout", { method: "POST" });
+      setIsGuest(false);
     } else {
       // Sign out from NextAuth
-      await signOut({ redirect: false })
+      await signOut({ redirect: false });
     }
 
-    setIsOpen(false)
-    router.push("/signIn")
-  }
+    setIsOpen(false);
+    router.push("/signIn");
+  };
 
   const menuItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/about", label: "About", icon: Info },
     { href: "/contact", label: "Contact", icon: Mail },
-  ]
+    { href: "https://portfolio-sigma-rose-22.vercel.app/", label: "Portfolio", icon: User2 },
+  ];
 
   return (
     <motion.nav
@@ -116,12 +123,18 @@ const Navbar = () => {
               transition={{ delay: 0.5 }}
             >
               <span className="text-sm text-muted-foreground">
-                {isGuest ? "Guest User" : `Welcome, ${user?.username || user?.email}`}
+                {isGuest
+                  ? "Guest User"
+                  : `Welcome, ${user?.username || user?.email}`}
               </span>
               <Button onClick={handleSignOut}>Log Out</Button>
             </motion.div>
           ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
               <Link href="/signIn">
                 <Button>Log In</Button>
               </Link>
@@ -168,7 +181,9 @@ const Navbar = () => {
                     transition={{ delay: 0.3 }}
                   >
                     <User className="h-5 w-5 text-primary/80" />
-                    <span>{isGuest ? "Guest User" : user?.username || user?.email}</span>
+                    <span>
+                      {isGuest ? "Guest User" : user?.username || user?.email}
+                    </span>
                   </motion.div>
                   <motion.div
                     initial={{ x: 20, opacity: 0 }}
@@ -182,7 +197,11 @@ const Navbar = () => {
                   </motion.div>
                 </>
               ) : (
-                <motion.div initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
+                <motion.div
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
                   <Link href="/signIn" onClick={() => setIsOpen(false)}>
                     <Button className="w-full">
                       <LogIn className="mr-2 h-4 w-4" />
@@ -196,7 +215,7 @@ const Navbar = () => {
         </Sheet>
       </div>
     </motion.nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

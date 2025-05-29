@@ -1,33 +1,53 @@
 "use client"
 
 import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import type * as z from "zod"
 import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Loader2, Eye, EyeOff, UserRound } from "lucide-react"
+import { signIn } from "next-auth/react"
 import { FcGoogle } from "react-icons/fc"
 import { FaGithub } from "react-icons/fa"
+import { Eye, EyeOff, Loader2, UserRound } from "lucide-react"
+
 import { signinSchema } from "@/schemas/signInSchema"
-import { signIn } from "next-auth/react"
+import { useToast } from "@/hooks/use-toast"
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGuestLoading, setIsGuestLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
   const { toast } = useToast()
   const router = useRouter()
 
   const form = useForm<z.infer<typeof signinSchema>>({
     resolver: zodResolver(signinSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   })
 
   const onSubmit = async (data: z.infer<typeof signinSchema>) => {
@@ -38,10 +58,14 @@ const SignIn = () => {
         password: data.password,
         redirect: false,
       })
+
       if (result?.error) {
         toast({
           title: "Sign In Failed",
-          description: result.error === "CredentialsSignin" ? "Invalid email or password." : result.error,
+          description:
+            result.error === "CredentialsSignin"
+              ? "Invalid email or password."
+              : result.error,
           variant: "destructive",
         })
       } else {
@@ -50,7 +74,10 @@ const SignIn = () => {
     } catch (error) {
       toast({
         title: "Sign In Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {
@@ -64,7 +91,10 @@ const SignIn = () => {
     } catch (error) {
       toast({
         title: `${provider.charAt(0).toUpperCase() + provider.slice(1)} Sign In Failed`,
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         variant: "destructive",
       })
     }
@@ -75,9 +105,7 @@ const SignIn = () => {
     try {
       const response = await fetch("/api/guest-login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       })
 
       if (!response.ok) {
@@ -93,7 +121,10 @@ const SignIn = () => {
     } catch (error) {
       toast({
         title: "Guest Login Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
         variant: "destructive",
       })
     } finally {
@@ -106,7 +137,9 @@ const SignIn = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Welcome back</CardTitle>
-          <CardDescription className="text-center">Sign in to your account to continue</CardDescription>
+          <CardDescription className="text-center">
+            Sign in to your account to continue
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -145,13 +178,17 @@ const SignIn = () => {
                           className="pr-10"
                           {...field}
                         />
-                        <Button
+                        <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground bg-transparent border-none p-1"
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -176,22 +213,40 @@ const SignIn = () => {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Button variant="outline" className="w-full" onClick={() => handleProviderSignIn("google")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => handleProviderSignIn("google")}
+              className="w-full"
+            >
               <FcGoogle className="h-5 w-5 mr-2" />
               <span className="hidden sm:inline">Google</span>
             </Button>
 
-            <Button variant="outline" className="w-full" onClick={() => handleProviderSignIn("github")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => handleProviderSignIn("github")}
+              className="w-full"
+            >
               <FaGithub className="h-5 w-5 mr-2" />
               <span className="hidden sm:inline">GitHub</span>
             </Button>
 
-            <Button variant="outline" className="w-full" onClick={handleGuestLogin} disabled={isGuestLoading}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGuestLogin}
+              className="w-full"
+              disabled={isGuestLoading}
+            >
               {isGuestLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
@@ -205,14 +260,12 @@ const SignIn = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-2">
-          <div className="text-center w-full">
-            <p className="text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link href="/signUp" className="text-primary hover:underline font-medium">
-                Sign up
-              </Link>
-            </p>
-          </div>
+          <p className="text-sm text-center text-muted-foreground w-full">
+            Don&apos;t have an account?{" "}
+            <Link href="/signUp" className="text-primary hover:underline font-medium">
+              Sign up
+            </Link>
+          </p>
         </CardFooter>
       </Card>
     </div>
